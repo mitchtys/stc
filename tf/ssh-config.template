@@ -1,0 +1,8 @@
+%{ for host, ip in hosts }Host ${host}
+  HostName ${ip}
+  User ${user}
+  IdentityFile ${ssh_key}
+  StrictHostKeyChecking no
+  UserKnownHostsFile /dev/null
+  LogLevel QUIET
+%{ endfor }

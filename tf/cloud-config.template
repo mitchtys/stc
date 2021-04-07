@@ -1,0 +1,46 @@
+#cloud-config
+debug: true
+disable_root: false
+hostname: ${hostname}
+chpasswd:
+  list: |
+     root:changeme
+     opensuse:changeme
+  expire: false
+users:
+  - default
+  - name: opensuse
+    sudo: ALL=(ALL) NOPASSWD:ALL
+    ssh_authorized_keys:
+      - ${authorized_ssh_key_pub}
+ssh_authorized_keys:
+  - ${authorized_ssh_key_pub}
+runcmd:
+  - systemctl restart sshd.service
+  - install -dm700 --owner root --group root /root/.ssh
+  - install -m600 --owner root --group root /etc/id_rsa /root/.ssh/id_rsa
+  - install -m644 --owner root --group root /etc/id_rsa.pub /root/.ssh/id_rsa.pub
+  - install -dm700 --owner opensuse --group users /home/opensuse/.ssh
+  - install -m600 --owner opensuse --group users /etc/id_rsa /home/opensuse/.ssh/id_rsa
+  - install -m644 --owner opensuse --group users /etc/id_rsa.pub /home/opensuse/.ssh/id_rsa.pub
+write_files:
+- encoding: b64
+  content: ${base64encode(authorized_ssh_key)}
+  owner: root:root
+  path: /etc/id_rsa
+  permissions: '0600'
+- encoding: b64
+  content: ${base64encode(authorized_ssh_key_pub)}
+  owner: root:root
+  path: /etc/id_rsa.pub
+  permissions: '0644'
+- encoding: b64
+  content: ${base64encode(host_key_rsa)}
+  owner: root:root
+  path: /etc/ssh_host_rsa_key
+  permissions: '0600'
+- encoding: b64
+  content: ${base64encode(host_key_rsa_pub)}
+  owner: root:root
+  path: /etc/ssh_host_rsa_key.pub
+  permissions: '0644'
