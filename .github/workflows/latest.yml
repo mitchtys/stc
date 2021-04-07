@@ -1,0 +1,123 @@
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - master
+      - main
+
+name: latest
+
+jobs:
+  latest:
+    name: create latest assets
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout master
+        uses: actions/checkout@master
+
+      - name: install hub binary
+        uses: krdlab/setup-hub@master
+
+      - name: get cargo pkg version
+        id: version
+        run: |
+          export VERSION=$(awk -F\" '/^version/ {print $2}' < Cargo.toml)
+          echo ::set-output name=version::$VERSION
+
+      - name: delete existing latest assets
+        env:
+          GITHUB_USER: ${{ secrets.GITHUB_USER }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          hub release delete latest || :
+
+      - name: create new latest assets
+        id: create_latest
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: latest
+          release_name: latest
+          draft: false
+          prerelease: true
+
+  release_assets:
+    name: assets
+    runs-on: ${{ matrix.config.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        config:
+          # TODO: figure out how to get static aarch64 maybe, and the gnu targets probably have a glibc requirement, not sure its useful to have
+          - {os: ubuntu-latest, toolchain: stable, target: x86_64-unknown-linux-gnu, target_cpu: generic, cross: false}
+          - {os: ubuntu-latest, toolchain: stable, target: x86_64-unknown-linux-musl, target_cpu: generic, cross: true}
+          - {os: ubuntu-latest, toolchain: stable, target: aarch64-unknown-linux-gnu, target_cpu: generic, cross: true}
+          - {os: ubuntu-latest, toolchain: stable, target: aarch64-unknown-linux-musl, target_cpu: generic, cross: true}
+          - {os: ubuntu-latest, toolchain: stable, target: armv7-unknown-linux-gnueabihf, target_cpu: generic, cross: true}
+          - {os: macos-latest, toolchain: stable, target: x86_64-apple-darwin, target_cpu: generic, cross: false}
+          # TODO: which is these is right(er) I don't know windows...?
+          - {os: windows-latest, toolchain: stable-x86_64-pc-windows-gnu, target: x86_64-pc-windows-gnu, target_cpu: generic, cross: false}
+          - {os: windows-latest, toolchain: stable-x86_64-pc-windows-msvc, target: x86_64-pc-windows-msvc, target_cpu: generic, cross: false}
+    steps:
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: ${{ matrix.config.toolchain }}
+          target: ${{ matrix.config.target }}
+          override: true
+          default: true
+
+      - name: setup cross
+        uses: actions-rs/cargo@v1
+        if: ${{ matrix.config.cross }}
+        with:
+          command: install
+          args: --version 0.1.16 cross
+
+      - name: get run datetime
+        run: |
+          echo DATE=$(date +'%Y%m%d') | tee -a $GITHUB_ENV
+        shell: bash
+
+      - name: checkout
+        uses: actions/checkout@v1
+        with:
+          submodules: true
+
+      - name: what cargo version am I?
+        id: version
+        run: |
+          export VERSION=$(awk -F\" '/^version/ {print $2}' < Cargo.toml)
+          echo ::set-output name=version::$VERSION
+        shell: bash
+
+      - name: build
+        uses: actions-rs/cargo@v1
+        env:
+          DATE: ${{ env.DATE }}
+        with:
+          use-cross: ${{ matrix.config.cross }}
+          command: rustc
+          args:  --manifest-path Cargo.toml --release --target ${{ matrix.config.target }} --bin stc --no-default-features -- -C target-cpu=${{ matrix.config.target_cpu }}
+
+      - name: txz linux binary
+        if: matrix.config.os == 'ubuntu-latest'
+        run: tar -C ./target/${{ matrix.config.target }}/release -cJvf stc-${{ steps.version.outputs.version }}.${{ env.DATE }}-${{ matrix.config.target }}.txz stc
+
+      - name: tgz macos binary
+        if: matrix.config.os == 'macos-latest'
+        run: tar -C ./target/${{ matrix.config.target }}/release -czvf stc-${{ steps.version.outputs.version }}.${{ env.DATE }}-${{ matrix.config.target }}.tgz stc
+
+      - name: zip windows binary
+        if: matrix.config.os == 'windows-latest'
+        run: compress-archive ./target/${{ matrix.config.target }}/release/stc.exe stc-${{ steps.version.outputs.version }}.${{ env.DATE }}-${{ matrix.config.target }}.zip
+
+      - name: upload release binary
+        uses: svenstaro/upload-release-action@v1-release
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: stc-${{ steps.version.outputs.version }}.${{ env.DATE }}-${{ matrix.config.target }}.*
+          asset_name: stc-${{ steps.version.outputs.version }}.${{ env.DATE }}-${{ matrix.config.target }}
+          tag: latest
+          file_glob: true
+          overwrite: true

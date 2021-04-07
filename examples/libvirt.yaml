@@ -1,0 +1,5 @@
+apiVersion: somevalueitsnotusedatallyet
+provider: libvirt
+terraformVars:
+  base_dir: "/tmp"
+  node_count: 1

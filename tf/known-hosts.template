@@ -1,0 +1,1 @@
+%{ for host, ip in hosts }${ip} ${host_keys[host]}${host} ${host_keys[host]}%{ endfor }
