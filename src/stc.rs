@@ -22,16 +22,20 @@ async fn main() -> anyhow::Result<(), anyhow::Error> {
         settings = s.clone();
     }
 
-    let target_triple = env!("VERGEN_TARGET_TRIPLE");
+    let target_triple = env!("VERGEN_RUSTC_HOST_TRIPLE");
     let build_timestamp = env!("VERGEN_BUILD_TIMESTAMP");
-    let short_sha = env!("VERGEN_SHA_SHORT");
+    let short_sha = env!("VERGEN_GIT_SHA_SHORT");
+    let git_semver = env!("VERGEN_GIT_SEMVER");
+    let git_branch = env!("VERGEN_GIT_BRANCH");
 
     let stc_version_verbose = format!(
-        "{} arch {} built on {} commit {}\n",
-        concat!("version ", clap::crate_version!()),
-        target_triple,
+        "{}\n\nbuilt: {}\nsemver: {}\narch: {}\nsha: {}\nbranch: {}",
+        clap::crate_version!(),
         build_timestamp,
-        &short_sha
+        git_semver,
+        target_triple,
+        short_sha,
+        git_branch
     );
 
     let cli = clap::App::new(clap::crate_name!())
@@ -194,7 +198,7 @@ fn tf_zip_prime(
 }
 
 fn tf_bin(cachedir: std::path::PathBuf) -> anyhow::Result<std::path::PathBuf> {
-    Ok(stc::CacheEntry::new(
+    stc::CacheEntry::new(
         stc::CacheSource::CompressedFile {
             file: tf_zip(cachedir.clone()).cache()?,
             dir: "bin".to_string(),
@@ -203,7 +207,7 @@ fn tf_bin(cachedir: std::path::PathBuf) -> anyhow::Result<std::path::PathBuf> {
         cachedir,
         Some("432c69434a8f093e02891a2a9e9c43558c233343972d03b3809bf6fd9a6f9659".to_string()),
     )
-    .cache()?)
+    .cache()
 }
 
 fn packer_zip_prime(
@@ -226,7 +230,7 @@ fn packer_zip_prime(
 }
 
 fn packer_bin(cachedir: std::path::PathBuf) -> anyhow::Result<std::path::PathBuf> {
-    Ok(stc::CacheEntry::new(
+    stc::CacheEntry::new(
         stc::CacheSource::CompressedFile {
             file: packer_zip(cachedir.clone()).cache()?,
             dir: "bin".to_string(),
@@ -235,7 +239,7 @@ fn packer_bin(cachedir: std::path::PathBuf) -> anyhow::Result<std::path::PathBuf
         cachedir,
         Some("4ee2b987ba623e132959b6c939f8f62bc8fdc29ee391434606ddc0b30b73adb1".to_string()),
     )
-    .cache()?)
+    .cache()
 }
 
 fn bento_zip(cachedir: std::path::PathBuf) -> stc::CacheEntry {
@@ -270,7 +274,7 @@ fn packer_image(
     image: std::string::String,
     cachedir: std::path::PathBuf,
 ) -> anyhow::Result<std::path::PathBuf> {
-    Ok(stc::CacheEntry::new(
+    stc::CacheEntry::new(
         stc::CacheSource::PackerBuildImage {
             cwd: bento_dir(cachedir.clone())?,
             content: content.clone(),
@@ -280,7 +284,7 @@ fn packer_image(
         cachedir,
         None,
     )
-    .cache()?)
+    .cache()
 }
 
 fn embed_asset(

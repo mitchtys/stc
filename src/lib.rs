@@ -673,9 +673,8 @@ impl CacheEntry {
                             }
                         }
 
-                        let mut tf_apply_args = vec![];
-                        tf_apply_args.push("apply".to_string());
-                        tf_apply_args.push("-auto-approve".to_string());
+                        let mut tf_apply_args =
+                            vec!["apply".to_string(), "-auto-approve".to_string()];
                         tf_apply_args.append(&mut user_vars);
                         tf_apply_args.push("-var".to_string());
                         tf_apply_args.push(format!("qcow_source={}", image));
@@ -740,7 +739,7 @@ impl<W: std::io::Write> std::io::Write for WriterWithProgress<W> {
         })
     }
     fn flush(&mut self) -> std::io::Result<()> {
-        Ok(self.inner.flush()?)
+        self.inner.flush()
     }
 }
 

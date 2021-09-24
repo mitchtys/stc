@@ -4,7 +4,7 @@ fn is_hidden(entry: &walkdir::DirEntry) -> bool {
     entry
         .file_name()
         .to_str()
-        .map(|s| s.starts_with("."))
+        .map(|s| s.starts_with('.'))
         .unwrap_or(false)
 }
 
@@ -49,8 +49,7 @@ fn main() -> anyhow::Result<(), anyhow::Error> {
     *config.git_mut().semver_kind_mut() = vergen::SemverKind::Normal;
     *config.git_mut().semver_dirty_mut() = Some("-dirty");
 
-    vergen::vergen(config)
-        .expect("Unable to generate cargo build environment values");
+    vergen::vergen(config).expect("Unable to generate cargo build environment values");
 
     if !std::path::Path::new(&embed_dir).exists() {
         if let Err(err) = std::fs::create_dir(&embed_dir) {
@@ -65,16 +64,17 @@ fn main() -> anyhow::Result<(), anyhow::Error> {
     let mut tar = tar::Builder::new(enc);
 
     let walker = walkdir::WalkDir::new("tf").into_iter();
-    for entry in walker.filter_entry(|e| !is_hidden(e) && (is_dir(e) || is_tf(e) || is_shell(e))) {
+    for thing in walker
+        .filter_entry(|e| !is_hidden(e) && (is_dir(e) || is_tf(e) || is_shell(e)))
+        .flatten()
+    {
         // If only one could do multiple if let Ok()'s in a single conditional...
-        if let Ok(thing) = entry {
-            eprintln!("{}", thing.path().display());
-            if let Ok(relpath) = thing.path().strip_prefix("tf/") {
-                if let Some(s) = relpath.to_str() {
-                    if s != "" {
-                        tar.append_path_with_name(thing.path(), relpath)
-                            .with_context(|| format!("appending {:?} to tar failed", &s))?;
-                    }
+        eprintln!("{}", thing.path().display());
+        if let Ok(relpath) = thing.path().strip_prefix("tf/") {
+            if let Some(s) = relpath.to_str() {
+                if !s.is_empty() {
+                    tar.append_path_with_name(thing.path(), relpath)
+                        .with_context(|| format!("appending {:?} to tar failed", &s))?;
                 }
             }
         }

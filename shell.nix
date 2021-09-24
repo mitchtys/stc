@@ -10,6 +10,7 @@ let
   rustPlatform = makeRustPlatform {
     rustc = rustStable;
     cargo = rustStable;
+    rustfmt = rustStable;
   };
 in mkShell {
   buildInputs = [ clang rustStable openssl pkgconfig cargo-watch ];
