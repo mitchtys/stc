@@ -1,25 +1,17 @@
-with import <nixpkgs> { };
 let
-  t = terraform.withPlugins (p: [
-    p.libvirt
-    p.local
-    p.null
-    p.random
-    p.shell
-    p.template
-    p.tls
-  ]);
-in
-mkShell {
-  buildInputs = [
-    cargo
-    cargo-watch
-    clippy
-    entr
-    packer
-    pkg-config
-    rustfmt
-    t
-    tflint
-  ];
+  rust-overlay = builtins.fetchTarball {
+    url = "https://github.com/oxalica/rust-overlay/archive/master.tar.gz";
+  };
+  pkgs = import <nixpkgs> { overlays = [ (import (rust-overlay)) ]; };
+in with pkgs;
+let
+  rustChannel = rustChannelOf { channel = "1.52.0"; };
+  rustStable = rustChannel.rust.override { extensions = [ "rust-src" ]; };
+  rustPlatform = makeRustPlatform {
+    rustc = rustStable;
+    cargo = rustStable;
+  };
+in mkShell {
+  buildInputs = [ clang rustStable openssl pkgconfig cargo-watch ];
+  LIBCLANG_PATH = "${llvmPackages.libclang}/lib";
 }

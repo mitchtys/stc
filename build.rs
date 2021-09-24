@@ -41,8 +41,16 @@ fn main() -> anyhow::Result<(), anyhow::Error> {
         _ => return Err(anyhow::anyhow!("OUT_DIR isn't set in build.rs?")),
     };
 
-    vergen::generate_cargo_keys(vergen::ConstantsFlags::all())
-        .expect("Unable to generate cargo build env keys!");
+    let mut config = vergen::Config::default();
+
+    *config.build_mut().kind_mut() = vergen::TimestampKind::All;
+    *config.build_mut().timezone_mut() = vergen::TimeZone::Local;
+    *config.git_mut().sha_kind_mut() = vergen::ShaKind::Short;
+    *config.git_mut().semver_kind_mut() = vergen::SemverKind::Normal;
+    *config.git_mut().semver_dirty_mut() = Some("-dirty");
+
+    vergen::vergen(config)
+        .expect("Unable to generate cargo build environment values");
 
     if !std::path::Path::new(&embed_dir).exists() {
         if let Err(err) = std::fs::create_dir(&embed_dir) {

@@ -37,7 +37,7 @@ ureq          = { version = "1.5", features = ["json", "charset"] }
 zip           = "0.5"
 
 [build-dependencies]
-vergen     = "3.0"
+vergen     = "5.1"
 walkdir    = "2.0"
 # Duplicated in dependencies above keep in sync
 anyhow     = "1.0"
