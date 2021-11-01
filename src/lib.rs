@@ -262,23 +262,9 @@ impl CacheEntry {
 
         match &self.source {
             CacheSource::Uri(uri) => {
-                let response = ureq::get(&uri)
-                    .timeout_connect(15_000)
-                    .timeout_read(15_000)
-                    .call();
-
-                if response.synthetic() {
-                    let error = response.into_synthetic_error().unwrap();
-                    return Err(error.into());
-                }
-
-                if response.error() {
-                    return Err(anyhow::anyhow!(format!(
-                        "Received error status code {} for uri {}",
-                        response.status(),
-                        &uri
-                    )));
-                }
+                let response = ureq::get(uri)
+                    .timeout(std::time::Duration::new(15, 0))
+                    .call()?;
 
                 let content_length = if let Some(content_length) = response.header("Content-Length")
                 {
@@ -408,7 +394,7 @@ impl CacheEntry {
                         extract_bar.enable_steady_tick(250);
 
                         if let Some(msg) = out.to_str() {
-                            extract_bar.set_message(msg);
+                            extract_bar.set_message(msg.to_owned());
                         }
 
                         let outfile = std::fs::File::create(&fname)
@@ -477,8 +463,7 @@ impl CacheEntry {
                     return Err(anyhow::anyhow!("couldn't convert cachedir to a string?"));
                 }
 
-                // TODO: check that packer exited 0, for now who cares
-                let _packer = std::process::Command::new(&packer)
+                if !std::process::Command::new(&packer)
                     .args(&[
                         "build",
                         "--only=qemu",
@@ -488,8 +473,12 @@ impl CacheEntry {
                         "packer_templates/opensuse/opensuse-leap-15.2-x86_64.json",
                     ])
                     .current_dir(&cwd)
-                    .status()
-                    .with_context(|| format!("{:?} build ... cwd: {:?}", packer, cwd))?;
+                    .status()?
+                    .success()
+                {
+                    return Err(anyhow::anyhow!("packer build failed..."));
+                }
+
                 std::fs::rename(&src, &dst)
                     .with_context(|| format!("std::fs::rename() {:?} to {:?}", src, &dst))?;
                 Ok(dst)
@@ -509,7 +498,7 @@ impl CacheEntry {
                         format!("std::fs::File::create() failed with file: {:?}", &fname)
                     })?;
                     output
-                        .write_all(asset.as_ref())
+                        .write_all(asset.data.as_ref())
                         .with_context(|| format!("std::fs::File::write_all() to {:?}", &fname))?;
 
                     // TODO: Future problem/thoughts, here is where the rubber

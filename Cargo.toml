@@ -17,23 +17,23 @@ path = "src/stc.rs"
 anyhow        = "1.0"
 chrono        = "0.4"
 clap          = "2.33"
-config        = { version = "0.10", features = ["toml"] }
+config        = { version = "0.11", features = ["toml"] }
 data-encoding = "2.3"
 digest        = "0.9"
 dirs-next     = "2.0"
 flate2        = "1.0"
 hex           = "0.4"
-indicatif     = "0.15"
+indicatif     = "0.16"
 ring          = "0.16"
-rust-embed    = { version = "5.8", features = ["interpolate-folder-path"] }
+rust-embed    = { version = "6.2", features = ["interpolate-folder-path"] }
 serde         = { version = "1.0", features = ["derive"] }
 serde_derive  = "1.0"
 serde_json    = "1.0"
 serde_yaml    = "0.8"
 sha2          = "0.9"
 tar           = "0.4"
-tokio         = { version = "1.1", features = ["macros", "fs", "io-util", "rt-multi-thread"] }
-ureq          = { version = "1.5", features = ["json", "charset"] }
+tokio         = { version = "1.13", features = ["macros", "fs", "io-util", "rt-multi-thread"] }
+ureq          = { version = "2.3", features = ["json", "charset"] }
 zip           = "0.5"
 
 [build-dependencies]
@@ -43,7 +43,7 @@ walkdir    = "2.0"
 anyhow     = "1.0"
 tar        = "0.4"
 flate2     = "1.0"
-rust-embed = "5.8"
+rust-embed = "6.2"
 
 # Release profile is optimized for output size. only "questionable" option is
 # the panic setting imo, it kills the backtrace but reduces huge binary sizes

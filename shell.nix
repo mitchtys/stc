@@ -5,7 +5,7 @@ let
   pkgs = import <nixpkgs> { overlays = [ (import (rust-overlay)) ]; };
 in with pkgs;
 let
-  rustChannel = rustChannelOf { channel = "1.52.0"; };
+  rustChannel = rustChannelOf { channel = "1.56"; };
   rustStable = rustChannel.rust.override { extensions = [ "rust-src" ]; };
   rustPlatform = makeRustPlatform {
     rustc = rustStable;

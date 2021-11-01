@@ -14,7 +14,17 @@ release:
 
 .PHONY: clean
 clean:
+	-cargo clean
 	-rm -fr target
+
+.PHONY: update
+update:
+	cargo update
+
+# The sledgehammer of "hold my beer hope this works" in local dev
+.PHONY: wtf
+wtf: clean update
+	touch build.rs
 
 .PHONY: watch
 watch:

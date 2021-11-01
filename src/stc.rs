@@ -27,15 +27,17 @@ async fn main() -> anyhow::Result<(), anyhow::Error> {
     let short_sha = env!("VERGEN_GIT_SHA_SHORT");
     let git_semver = env!("VERGEN_GIT_SEMVER");
     let git_branch = env!("VERGEN_GIT_BRANCH");
+    let cargo_profile = env!("VERGEN_CARGO_PROFILE");
 
     let stc_version_verbose = format!(
-        "{}\n\nbuilt: {}\nsemver: {}\narch: {}\nsha: {}\nbranch: {}",
+        "{}\n\nbuilt:\t{}\nsemver:\t{}\narch:\t{}\nsha:\t{}\nbranch:\t{}\ntype:\t{}",
         clap::crate_version!(),
         build_timestamp,
         git_semver,
         target_triple,
         short_sha,
-        git_branch
+        git_branch,
+        cargo_profile
     );
 
     let cli = clap::App::new(clap::crate_name!())
@@ -87,7 +89,7 @@ async fn main() -> anyhow::Result<(), anyhow::Error> {
 
         // TODO: Need to get rid of these hard coded hacks for getting
         // binaries/etc... but thats for future me to fix, sorry future me past
-        // me is a jerk
+        // me is a jerk. I know, jerk.
         tf_bin(cache.clone())?;
         packer_bin(cache.clone())?;
 
@@ -162,6 +164,8 @@ async fn main() -> anyhow::Result<(), anyhow::Error> {
     Ok(())
 }
 
+// TODO: All these hard codedfiles/defaults should be a compile time yaml file
+// or something that people can crib/customize off in the embed.tgz file or similar
 fn packer_zip(cachedir: std::path::PathBuf) -> stc::CacheEntry {
     packer_zip_prime(
         "1.7.2".to_string(),
@@ -294,7 +298,7 @@ fn embed_asset(
 ) -> anyhow::Result<std::path::PathBuf> {
     let asset =
         stc::Asset::get(&source).ok_or(anyhow::anyhow!(format!("no asset {} found", source)))?;
-    let reader = std::io::BufReader::new(asset.as_ref());
+    let reader = std::io::BufReader::new(asset.data.as_ref());
     let digest = stc::sha256_digest(reader)?;
 
     let tf_sha = format!("tf-{}", &commit);

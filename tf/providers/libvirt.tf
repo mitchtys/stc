@@ -126,7 +126,7 @@ resource "libvirt_cloudinit_disk" "cloud_init" {
   name       = "${random_pet.node_petname[count.index].id}-cloud-init.iso"
   pool       = libvirt_pool.vm.name
   count      = local.count
-  user_data  = templatefile("${path.root}/cloud-config.template", {
+  user_data  = templatefile("${path.root}/cloud-config-v1.template", {
     hostname = random_pet.node_petname[count.index].id,
     authorized_ssh_key = tls_private_key.ssh_key.private_key_pem,
     authorized_ssh_key_pub = tls_private_key.ssh_key.public_key_openssh,
