@@ -51,15 +51,15 @@ jobs:
           # TODO: Switch this to use this prior to merging, for testing this is fine
           # https://rust-lang.github.io/rustup/overrides.html#the-toolchain-file
           # TODO: figure out how to get static aarch64 maybe, and the gnu targets probably have a glibc requirement, not sure its useful to have
-          - {os: ubuntu-latest, toolchain: 1.56.0, target: x86_64-unknown-linux-gnu, target_cpu: generic, cross: false}
-          - {os: ubuntu-latest, toolchain: 1.56.0, target: x86_64-unknown-linux-musl, target_cpu: generic, cross: true}
-          - {os: ubuntu-latest, toolchain: 1.56.0, target: aarch64-unknown-linux-gnu, target_cpu: generic, cross: true}
-          - {os: ubuntu-latest, toolchain: 1.56.0, target: aarch64-unknown-linux-musl, target_cpu: generic, cross: true}
-          - {os: ubuntu-latest, toolchain: 1.56.0, target: armv7-unknown-linux-gnueabihf, target_cpu: generic, cross: true}
-          - {os: macos-latest, toolchain: 1.56.0, target: x86_64-apple-darwin, target_cpu: generic, cross: false}
+          - {os: ubuntu-latest, toolchain: 1.56.1, target: x86_64-unknown-linux-gnu, target_cpu: generic, cross: false}
+          - {os: ubuntu-latest, toolchain: 1.56.1, target: x86_64-unknown-linux-musl, target_cpu: generic, cross: true}
+          - {os: ubuntu-latest, toolchain: 1.56.1, target: aarch64-unknown-linux-gnu, target_cpu: generic, cross: true}
+          - {os: ubuntu-latest, toolchain: 1.56.1, target: aarch64-unknown-linux-musl, target_cpu: generic, cross: true}
+          - {os: ubuntu-latest, toolchain: 1.56.1, target: armv7-unknown-linux-gnueabihf, target_cpu: generic, cross: true}
+          - {os: macos-latest, toolchain: 1.56.1, target: x86_64-apple-darwin, target_cpu: generic, cross: false}
           # TODO: which is these is right(er) I don't know windows...?
-          - {os: windows-latest, toolchain: 1.56.0-x86_64-pc-windows-gnu, target: x86_64-pc-windows-gnu, target_cpu: generic, cross: false}
-          - {os: windows-latest, toolchain: 1.56.0-x86_64-pc-windows-msvc, target: x86_64-pc-windows-msvc, target_cpu: generic, cross: false}
+          - {os: windows-latest, toolchain: 1.56.1-x86_64-pc-windows-gnu, target: x86_64-pc-windows-gnu, target_cpu: generic, cross: false}
+          - {os: windows-latest, toolchain: 1.56.1-x86_64-pc-windows-msvc, target: x86_64-pc-windows-msvc, target_cpu: generic, cross: false}
     steps:
       - uses: actions-rs/toolchain@v1
         with:

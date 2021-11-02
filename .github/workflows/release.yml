@@ -49,8 +49,8 @@ jobs:
       matrix:
         config:
           # TODO: figure out how to get static aarch64 maybe, and the gnu targets probably have a glibc requirement, not sure its useful to have
-          - {os: ubuntu-latest, toolchain: stable, target: x86_64-unknown-linux-gnu, target_cpu: generic, cross: false}
-          - {os: ubuntu-latest, toolchain: stable, target: x86_64-unknown-linux-musl, target_cpu: generic, cross: true}
+          - {os: ubuntu-latest, toolchain: 1.56.1, target: x86_64-unknown-linux-gnu, target_cpu: generic, cross: false}
+          - {os: ubuntu-latest, toolchain: 1.56.1, target: x86_64-unknown-linux-musl, target_cpu: generic, cross: true}
     steps:
       - uses: actions-rs/toolchain@v1
         with:
